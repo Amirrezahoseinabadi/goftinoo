@@ -1,126 +1,105 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-  <meta charset="UTF-8">
-  <title>پشتیبانی آنلاین</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>گفتینو | چت پشتیبانی</title>
   <style>
+    :root {
+      --primary: #0062ff;
+      --bg: #f5f5f5;
+      --msg-user: #0084ff;
+      --msg-agent: #e4e6eb;
+    }
     body {
-      font-family: 'Vazirmatn', sans-serif;
-      margin: 0;
-      background: #f7f8fa;
+      margin: 0; font-family: sans-serif; background: var(--bg);
     }
-    .chatbox {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 360px;
-      height: 500px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      background: white;
+    #chat-container {
+      position: fixed; bottom: 20px; right: 20px;
+      width: 350px; max-height: 600px;
+      background: white; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex; flex-direction: column;
+      overflow: hidden; font-size: 13px;
     }
-    .header {
-      background: #007bff;
-      color: white;
-      padding: 12px 16px;
+    #header {
+      background: var(--primary); color: white;
+      padding: 10px; text-align: center;
       font-weight: bold;
-      text-align: center;
     }
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-    }
+    #messages { flex: 1; padding: 10px; overflow-y: auto; direction: rtl; }
     .msg {
-      margin: 6px 0;
-      max-width: 80%;
-      padding: 8px 12px;
-      border-radius: 10px;
-      clear: both;
+      margin: 6px 0; padding: 8px 12px;
+      max-width: 75%; border-radius: 18px;
+      word-wrap: break-word;
+      line-height: 1.4;
     }
-    .me {
-      background: #e1f3ff;
-      float: right;
-      text-align: right;
+    .user { margin-left: auto; background: var(--msg-user); color: white; }
+    .agent { margin-right: auto; background: var(--msg-agent); color: black; }
+    #form {
+      display: flex; padding: 8px; border-top: 1px solid #ddd;
     }
-    .admin {
-      background: #f1f1f1;
-      float: left;
-      text-align: left;
+    #input {
+      flex: 1; padding: 8px; border: 1px solid #ccc;
+      border-radius: 18px; outline: none;
     }
-    .form {
-      display: flex;
-      border-top: 1px solid #ddd;
-      padding: 10px;
-    }
-    input {
-      flex: 1;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      outline: none;
-    }
-    button {
-      margin-right: 6px;
-      padding: 8px 14px;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 6px;
+    #send {
+      background: var(--primary); color: white;
+      border: none; padding: 0 15px;
+      margin-right: 8px;
+      border-radius: 18px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-
-<div class="chatbox">
-  <div class="header">💬 چت با پشتیبانی</div>
-  <div id="messages" class="messages"></div>
-  <form id="form" class="form">
-    <input id="input" type="text" placeholder="نوشتن پیام..." autocomplete="off">
-    <button>ارسال</button>
+<div id="chat-container">
+  <div id="header">💬 چت آنلاین</div>
+  <div id="messages"></div>
+  <form id="form">
+    <input id="input" type="text" placeholder="پیامت رو اینجا بنویس..." autocomplete="off" />
+    <button type="submit" id="send">ارسال</button>
   </form>
 </div>
 
 <script>
-  const input = document.getElementById('input');
-  const form = document.getElementById('form');
-  const messagesDiv = document.getElementById('messages');
-  const sessionId = localStorage.getItem('goftinoo-session') || crypto.randomUUID();
-  localStorage.setItem('goftinoo-session', sessionId);
+  const form = document.getElementById('form'),
+        input = document.getElementById('input'),
+        messagesEl = document.getElementById('messages'),
+        ENDPOINT = 'https://YOUR_WORKER.workers.dev/messages';
 
-  async function loadMessages() {
-    const res = await fetch(`https://YOUR_WORKER_URL.workers.dev/messages?session=${sessionId}`);
-    const data = await res.json();
-    messagesDiv.innerHTML = '';
-    for (let msg of data) {
-      const div = document.createElement('div');
-      div.className = 'msg ' + (msg.from === 'me' ? 'me' : 'admin');
-      div.textContent = msg.text;
-      messagesDiv.appendChild(div);
-    }
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  async function loadMsgs() {
+    try {
+      const res = await fetch(ENDPOINT);
+      const msgs = await res.json();
+      messagesEl.innerHTML = '';
+      for (const {who, text, t} of msgs) {
+        const d = new Date(t);
+        const time = d.toLocaleTimeString('fa-IR',{hour: '2-digit', minute:'2-digit'});
+        const div = document.createElement('div');
+        div.className = `msg ${who}`;
+        div.innerHTML = `<span>${text}</span><br><small style="opacity:.6;">${who=='user'?'شما':'پشتیبان'} – ${time}</small>`;
+        messagesEl.appendChild(div);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    } catch(err){ console.error(err); }
   }
 
-  form.onsubmit = async (e) => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const text = input.value.trim();
     if (!text) return;
-    await fetch(`https://YOUR_WORKER_URL.workers.dev/messages?session=${sessionId}`, {
+    await fetch(ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ who: 'user', text })
     });
     input.value = '';
-    await loadMessages();
-  };
+    loadMsgs();
+  });
 
-  loadMessages();
-  setInterval(loadMessages, 3000);
+  loadMsgs();
+  setInterval(loadMsgs, 3000);
 </script>
-
 </body>
 </html>
