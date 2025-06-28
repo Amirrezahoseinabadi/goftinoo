@@ -56,7 +56,7 @@
   const messages = document.getElementById('messages');
 
   async function loadMessages() {
-    const res = await fetch('https://your-worker-url.workers.dev/messages');
+    const res = await fetch('https://goftego.amiruserbot7.workers.dev');
     const data = await res.json();
     messages.innerHTML = '';
     data.forEach(msg => {
