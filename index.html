@@ -291,7 +291,7 @@
         // Send message to the worker (simulated backend)
         // Note: The provided worker.js only echoes the message.
         // For a real chat, you'd integrate with a proper backend/database.
-        const workerUrl = '/chat'; // Assuming worker is hosted at /chat endpoint
+        const workerUrl = 'https://goftego.amiruserbot7.workers.dev/chat'; // Updated worker URL
         const response = await fetch(workerUrl, {
           method: 'POST',
           headers: {
