@@ -51,36 +51,36 @@
 </div>
 
 <script>
-  const form = document.getElementById('form');
-  const input = document.getElementById('input');
-  const messages = document.getElementById('messages');
+  const iframe = document.createElement('iframe');
+  iframe.src = "https://amirrezahoseinabadi.github.io/goftinoo/";
+  iframe.style.position = 'fixed';
+  iframe.style.bottom = '80px';
+  iframe.style.right = '20px';
+  iframe.style.width = '350px';
+  iframe.style.height = '500px';
+  iframe.style.border = 'none';
+  iframe.style.zIndex = '9999';
+  iframe.style.display = 'none';
+  iframe.style.borderRadius = '12px';
+  document.body.appendChild(iframe);
 
-  async function loadMessages() {
-    const res = await fetch('https://goftego.amiruserbot7.workers.dev');
-    const data = await res.json();
-    messages.innerHTML = '';
-    data.forEach(msg => {
-      const div = document.createElement('div');
-      div.textContent = `🧑‍💻 ${msg}`;
-      messages.appendChild(div);
-    });
-    messages.scrollTop = messages.scrollHeight;
-  }
+  const btn = document.createElement('button');
+  btn.textContent = '💬 چت با پشتیبانی';
+  btn.style.position = 'fixed';
+  btn.style.bottom = '20px';
+  btn.style.right = '20px';
+  btn.style.padding = '12px 18px';
+  btn.style.background = '#007bff';
+  btn.style.color = 'white';
+  btn.style.border = 'none';
+  btn.style.borderRadius = '30px';
+  btn.style.cursor = 'pointer';
+  btn.style.zIndex = '9999';
+  document.body.appendChild(btn);
 
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const msg = input.value.trim();
-    if (!msg) return;
-    await fetch('https://your-worker-url.workers.dev/messages', {
-      method: 'POST',
-      body: msg
-    });
-    input.value = '';
-    loadMessages();
+  btn.onclick = () => {
+    iframe.style.display = iframe.style.display === 'none' ? 'block' : 'none';
   };
-
-  loadMessages();
-  setInterval(loadMessages, 3000); // auto-refresh
 </script>
 
 </body>
